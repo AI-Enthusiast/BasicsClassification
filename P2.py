@@ -3,12 +3,15 @@
 # Excersise 1
 
 import csv
-import pandas as pd
+
 import matplotlib.pyplot as plt
+import pandas as pd
+
 
 # Used to self report errors
 def error(errorMessage):
     print("> ERROR:\t" + errorMessage)
+
 
 # Creates a blank file with the given filename
 def createFile(file):
@@ -22,32 +25,37 @@ def readFile(file):
         start, out = [], []
         for item in DataReader:
             start.append(item)
-        #createFile().close()
+        # createFile().close()
         return start
 
-#Problem 1 of the homework
-def problem1():
-    def a(): # Part A
+
+# Problem 1 of the homework
+def prob1():
+    def a():  # Scatter plot of petal width and length of classes 2&3
         data = pd.read_csv("irisdata.csv")
 
-        # reassigns lables
+        # reassigns labels
         data.loc[data['species'] == "setosa", "species"] = 0
         data.loc[data['species'] == "versicolor", "species"] = 1
         data.loc[data['species'] == "virginica", "species"] = 2
 
-        x = data["petal_width"].values.T # x data for scatter plot
-        y = data["petal_length"].values.T # y data for scatter plot
-        color = (data[["species"]].values.T).astype("uint8") # how we color the point on the scatter plot
-        plt.scatter(x,y, c=color[0,:], s = 40)
+        x = data["petal_width"].values.T  # x data for scatter plot
+        y = data["petal_length"].values.T  # y data for scatter plot
+
+        color = (data[["species"]].values.T).astype("uint8")  # how we color the point on the scatter plot
+        plt.scatter(x[51:], y[51:], c=color[0, 51:],
+                    s=40)  # create a scatter plot of only the 2&3classes (row 51 and down)
+
         plt.xlabel("Petal Length")
         plt.ylabel("Petal Width")
         plt.title("Iris Data | 2nd & 3rd Classes")
-        plt.show()
+        plt.show()  # ggez
 
     def b():
-        print("TEMP")
-    a()
+        pass
+
+    a()  # run part A
+
 
 if __name__ == "__main__":
-    problem1()
-
+    prob1()  # run ploblem 1
