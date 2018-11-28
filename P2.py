@@ -31,20 +31,20 @@ def readFile(file):
 
 # Problem 1 of the homework
 def prob1():
-    def a():  # Scatter plot of petal width and length of classes 2&3
-        data = pd.read_csv("irisdata.csv")
+    data = pd.read_csv("irisdata.csv")
 
-        # reassigns labels
-        data.loc[data['species'] == "setosa", "species"] = 0
-        data.loc[data['species'] == "versicolor", "species"] = 1
-        data.loc[data['species'] == "virginica", "species"] = 2
+    # reassigns labels
+    data.loc[data['species'] == "setosa", "species"] = 0
+    data.loc[data['species'] == "versicolor", "species"] = 1
+    data.loc[data['species'] == "virginica", "species"] = 2
+
+    def a():  # Scatter plot of petal width and length of classes 2&3
 
         x = data["petal_width"].values.T  # x data for scatter plot
         y = data["petal_length"].values.T  # y data for scatter plot
-
-        color = (data[["species"]].values.T).astype("uint8")  # how we color the point on the scatter plot
-        plt.scatter(x[51:], y[51:], c=color[0, 51:],
-                    s=40)  # create a scatter plot of only the 2&3classes (row 51 and down)
+        color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
+        plt.scatter(x[50:], y[50:], c=color[0, 50:],
+                    s=40)  # create a scatter plot of only the 2&3classes (row 50 and down)
 
         plt.xlabel("Petal Length")
         plt.ylabel("Petal Width")
@@ -52,10 +52,15 @@ def prob1():
         plt.show()  # ggez
 
     def b():
-        pass
+        x = list(data.iloc[:,[2,3]].values) # if all else fails convert it to a string and remove the shit TEMP
+        y = list(data.iloc[:, 4].values)
+        #slit into testing and training
+        x_train, x_test = x[50:90].append(x[100:140]), x[90:100].append(x[140:150])
+        y_train, y_test = y[50:90].append(y[100:140]), y[90:100].append(y[140:150])
 
-    a()  # run part A
-
+        print(x)
+    #a()  # run part A
+    b()  # run part B
 
 if __name__ == "__main__":
-    prob1()  # run ploblem 1
+    prob1()  # run problem 1
