@@ -6,8 +6,11 @@ import csv
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from keras.layers import Dense, Activation
+from keras.models import Sequential, Model
+from sklearn.model_selection import train_test_split
 
-
+import math
 # Used to self report errors
 def error(errorMessage):
     print("> ERROR:\t" + errorMessage)
@@ -31,7 +34,7 @@ def readFile(file):
 
 # Problem 1 of the homework
 def prob1():
-    data = pd.read_csv("irisdata.csv")
+    data = pd.read_csv("irisdata.csv") #
 
     # reassigns labels
     data.loc[data['species'] == "setosa", "species"] = 0
@@ -52,15 +55,23 @@ def prob1():
         plt.show()  # ggez
 
     def b():
-        x = list(data.iloc[:,[2,3]].values) # if all else fails convert it to a string and remove the shit TEMP
-        y = list(data.iloc[:, 4].values)
-        #slit into testing and training
-        x_train, x_test = x[50:90].append(x[100:140]), x[90:100].append(x[140:150])
-        y_train, y_test = y[50:90].append(y[100:140]), y[90:100].append(y[140:150])
+        def predict(p):
+            return 1 if p >= .5 else 0
 
-        print(x)
-    #a()  # run part A
+        def logistic(z):
+            return ((1/(1 + math.exp(-z))), math.exp(z) + math.exp(-z))
+
+        print(logistic(0))
+        x = list(data.iloc[:, [2, 3]].values)  # if all else fails convert it to a string and remove the shit TEMP
+        y = list(data.iloc[:, 4].values)
+        # slit into testing and training
+        # x_train, x_test = (x[50:90,100:140]), (x[90:100],[140:150])
+        # y_train, y_test = y[50:90].append(y[100:140]), y[90:100].append(y[140:150])
+
+
+    # a()  # run part A
     b()  # run part B
+
 
 if __name__ == "__main__":
     prob1()  # run problem 1
