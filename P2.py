@@ -55,8 +55,6 @@ def prob1():
         plt.show()  # ggez
 
     def b():
-        print("temp")
-
         def predict(p):
             return 1 if p >= .5 else 0
 
@@ -81,7 +79,6 @@ def prob1():
         # slit into testing and training
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=1)
         w1, w2, bias = random.random(), random.random(), -random.random()
-
         for index in range(len(x_train)):
             N = x_train[index][0] * w1 + x_train[index][0] * w2 + bias
             T = sigmoid(N)
@@ -102,5 +99,4 @@ def prob1():
 
 
 if __name__ == "__main__":
-    print("temp")
     prob1()  # run problem 1
