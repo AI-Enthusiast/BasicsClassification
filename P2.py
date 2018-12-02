@@ -1,10 +1,11 @@
-# P2E1.py started on 11/13/2018
-# Authors: Cormac Dacker
+# P2.py started on 11/13/2018
+# Author: Cormac Dacker (cxd289)
 # Date: 6 December 2018
 
 import math
 import random
 
+import keras
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -16,18 +17,27 @@ def err(errorMessage):
 
 
 # Problem 1 of the homework #TODO CLean up before submitting
+data = pd.read_csv("irisdata.csv")
+
+# reassigns species labels
+data.loc[data['species'] == "setosa", "species"] = 0
+data.loc[data['species'] == "versicolor", "species"] = 1
+data.loc[data['species'] == "virginica", "species"] = 2
+
+x = data["petal_width"].values.T  # x data for scatter plot
+y = data["petal_length"].values.T  # y data for scatter plot
+
+# split into relevent data sections
+xV = list(data.iloc[50:, [2, 3]].values)  # Length and Width data
+yV = list(data.iloc[50:, 4].values)  # class data
+
+# slit into testing and training
+x_train, x_test, y_train, y_test = train_test_split(xV, yV, test_size=0.20, random_state=1)
+
+
 def prob1():
-    data = pd.read_csv("irisdata.csv")
-
-    # reassigns species labels
-    data.loc[data['species'] == "setosa", "species"] = 0
-    data.loc[data['species'] == "versicolor", "species"] = 1
-    data.loc[data['species'] == "virginica", "species"] = 2
-
     def a():  # Scatter plot of petal width and length of classes 2&3
 
-        x = data["petal_width"].values.T  # x data for scatter plot
-        y = data["petal_length"].values.T  # y data for scatter plot
         color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
         plt.scatter(x[50:], y[50:], c=color[0, 50:],
                     s=40)  # create a scatter plot of only the 2&3classes (row 50 and down)
@@ -37,8 +47,8 @@ def prob1():
         plt.title("1.A: Iris Data | 2nd & 3rd Classes")
         plt.show()  # ggez
 
-    def b():  # Part B, Contains Part D and E
-        def e():
+    def b():  # Part B, contains Part D and E
+        def e():  # Part E, calls Prob 1
             rows = [53, 57, 56, 70, 77, 136, 119, 106, 128, 136]
             x = list(data.iloc[rows, [2, 3]].values)  # Length and Width data
             y = list(data.iloc[rows, 4].values)  # class data
@@ -93,7 +103,7 @@ def prob1():
                     plt.title("1.D: Error Rate per Generation")
                     plt.show()
 
-                if prob == 'b':
+                if prob == 'b':  # check if it's 1.b
                     c()  # call part C
                     d()  # call part D
                     e()  # call part E
@@ -119,17 +129,9 @@ def prob1():
                 w2 = w2 - (T - t) * sigmoidDeriv(sigmoid(priorN)) * .1 * data[index][1]  # update w2
                 m = -w1 / w2  # the slope
                 bias = bias - (T - t) * sigmoidDeriv(sigmoid(N))  # update bias
+
             test(data, labels, prob)
 
-            # print(totErr)
-
-        # Here is the body of Problem 1 part B
-        # split into relevent data sections
-        x = list(data.iloc[50:, [2, 3]].values)  # Length and Width data
-        y = list(data.iloc[50:, 4].values)  # class data
-
-        # slit into testing and training
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.20, random_state=1)
         train(x_train, y_train)
 
     def c():  # plots the decition boundary with weights set by hand
@@ -157,5 +159,46 @@ def prob1():
     a()  # run part A
     b()  # run part B, calls part C, D, and E
 
+
+def prob2():
+    def mse(y, probY):
+        return pd.np.mean((y - probY) ** 2)
+
+
+def prob4():
+    def a(): # Part A, following the tutorial
+        print("\nPROB 4.A:")
+        def modelNN():
+            model = keras.Sequential()
+            model.add(keras.layers.Dense(1, input_dim=2, activation='sigmoid'))
+            model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
+            return model
+
+        model = modelNN()
+        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=250,
+                  validation_data=(pd.np.array(x_test), pd.np.array((y_test))))
+
+    def b(): # Part B, the complete iris data
+        print("\nPROB 4.B:")
+
+        # split into relevent data sections
+        xS = list(data.iloc[0:, [0,1,2,3]].values)  # Length and Width data
+        yS = list(data.iloc[0:, 4].values)  # class data
+
+        # slit into testing and training
+        x_train, x_test, y_train, y_test = train_test_split(xS, yS, test_size=0.20, random_state=1)
+
+        def modelNN():
+            model = keras.Sequential()
+            model.add(keras.layers.Dense(1, input_dim=4, activation='sigmoid'))
+            model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
+            return model
+
+        model = modelNN()
+        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=250,
+                  validation_data=(pd.np.array(x_test), pd.np.array((y_test))))
+    a() # run part A
+    b() # run part B
 if __name__ == "__main__":
-    prob1()  # run problem 1
+    # prob1()  # run problem 1
+    prob4()
