@@ -35,6 +35,7 @@ yV = list(data.iloc[50:, 4].values)  # class data
 x_train, x_test, y_train, y_test = train_test_split(xV, yV, test_size=0.20, random_state=1)
 
 
+# Uses Logistic regression
 def prob1():
     def a():  # Scatter plot of petal width and length of classes 2&3
 
@@ -165,40 +166,38 @@ def prob2():
         return pd.np.mean((y - probY) ** 2)
 
 
+# Uses a tool library to make it ez
 def prob4():
-    def a(): # Part A, following the tutorial
-        print("\nPROB 4.A:")
-        def modelNN():
-            model = keras.Sequential()
-            model.add(keras.layers.Dense(1, input_dim=2, activation='sigmoid'))
-            model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
-            return model
+    def modelNN(dim): # the model being used
+        model = keras.Sequential()
+        model.add(keras.layers.Dense(1, input_dim=dim, activation='sigmoid'))
+        model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
+        return model
 
-        model = modelNN()
-        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=250,
+    def a():  # Part A, following the tutorial
+        print("\nPROB 4.A:")
+        model = modelNN(2)
+        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=1000,
                   validation_data=(pd.np.array(x_test), pd.np.array((y_test))))
 
-    def b(): # Part B, the complete iris data
+    def b():  # Part B, the complete iris data
         print("\nPROB 4.B:")
 
         # split into relevent data sections
-        xS = list(data.iloc[0:, [0,1,2,3]].values)  # Length and Width data
+        xS = list(data.iloc[0:, [0, 1, 2, 3]].values)  # Length and Width data
         yS = list(data.iloc[0:, 4].values)  # class data
 
         # slit into testing and training
         x_train, x_test, y_train, y_test = train_test_split(xS, yS, test_size=0.20, random_state=1)
 
-        def modelNN():
-            model = keras.Sequential()
-            model.add(keras.layers.Dense(1, input_dim=4, activation='sigmoid'))
-            model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
-            return model
-
-        model = modelNN()
-        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=250,
+        model = modelNN(4)
+        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=1000,
                   validation_data=(pd.np.array(x_test), pd.np.array((y_test))))
-    a() # run part A
-    b() # run part B
+
+    a()  # run part A
+    b()  # run part B
+
+
 if __name__ == "__main__":
-    # prob1()  # run problem 1
+    prob1()  # run problem 1
     prob4()
