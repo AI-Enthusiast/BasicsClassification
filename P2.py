@@ -2,12 +2,12 @@
 # Author: Cormac Dacker (cxd289)
 # Date: 6 December 2018
 
-import math
 import random
 
 import keras
 import matplotlib.pyplot as plt
 import pandas as pd
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
 
 
@@ -18,6 +18,26 @@ def err(errorMessage):
 
 def sigmoid(z):
     return 1 / (1 + pd.np.exp(-z))
+
+
+def c(w1=-1, w2=-1, yIntcpt=6.465):  # plots the decition boundary with weights set by hand
+    # alternatively the user could be prompted for these
+    # y = - w1 * x + w2 * x / w3
+
+    # gathered from part a
+
+    color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
+    plt.scatter(x[50:], y[50:], c=color[0, 50:], s=40)
+
+    # Draws the desision boundary
+    X, Y = list(range(1, 3)), []  # what will be the line
+    for index in range(len(X)):
+        Y.append((-w1/w2) * X[index] + yIntcpt)  # creating the line
+    plt.plot(X, Y)
+    plt.xlabel("Petal Length")
+    plt.ylabel("Petal Width")
+    plt.title("1.C: Decision boundary " + str(w1) + ", " + str(w2) + ", " + str(yIntcpt))
+    plt.show()
 
 
 # Problem 1 of the homework #TODO CLean up before submitting
@@ -41,10 +61,9 @@ x_train, x_test, y_train, y_test = train_test_split(xV, yV, test_size=0.20, rand
 learningRate = .001
 
 
-# Uses Logistic regression
+# Uses Logistic regression and returns the weights for prob 2 to use
 def prob1():
     def a():  # Scatter plot of petal width and length of classes 2&3
-
         color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
         plt.scatter(x[50:], y[50:], c=color[0, 50:],
                     s=40)  # create a scatter plot of only the 2&3classes (row 50 and down)
@@ -79,14 +98,36 @@ def prob1():
 
         def train(data, labels, prob='b'):  # Trains the modle based off the given training
             def test(data=None, labels=None, prob="b"):  # Part D is inbedded to use info from part B
+                def d():  # Part D
+                    X, Y, Z = [], [], list(list(range(0,10000)))
+                    for i in range(len(xV)):
+                        X.append(xV[i][0]) # lengths
+                        Y.append(xV[i][1]) # widths
+
+                        for j in range(len(yV)): # maps x and y to the z axis
+                             Z.append(sigmoid(Y[i] * w1 + X[j] * w2 + bias))
+
+                    # for 3d plotting
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111, projection='3d')
+                    print(len(X),len(Y),len(Z))
+                    Axes3D.plot_wireframe(self = ax, X=pd.np.array(X), Y = pd.np.array(Y), Z =pd.np.array(Z[0]))
+                    #plt.plot(list(range(len(x_test))), errRate)
+                    plt.xlabel("Iteration")
+                    plt.ylabel("Proportion Correct on Test Set")
+                    plt.title("1.D: Error Rate per Generation")
+                    plt.show()
+
                 errRate = []
                 numWrong = 0
+
                 if prob == 'b':  # check if it's 1.b
                     data = x_test
                     labels = y_test
                     print("PROB 1.B:")
                 else:
                     print("PROB 1.E:")
+
                 # tests the data
                 for index in range(len(data)):
 
@@ -99,24 +140,6 @@ def prob1():
                     errRate.append(((index + 1) - numWrong) / (index + 1))
                     print("Predicted =", predicted, ", Actual =", actual, "Result =", out)
                 print("Score = ", str(100 * (len(data) - numWrong) / len(data)) + "%\n  ")
-
-                def d():  # Part D
-                    X, Y, Z = [], [], [[]]
-                    for i in range(len(xV)):
-                        X.append(xV[i][0])
-                        Y.append(xV[i][1])
-                        for j in range(len(yV)):
-                            Z[0].append(sigmoid(Y[i] * w1 + X[i] * w2 + bias))
-
-                    # for 3d plotting
-                    # fig = plt.figure()
-                    # ax = fig.add_subplot(111, projection='3d')
-                    # Axes3D.plot_wireframe(pd.np.array(X), pd.np.array(Y), pd.np.array(Z))
-                    plt.plot(list(range(len(x_test))), errRate)
-                    plt.xlabel("Iteration")
-                    plt.ylabel("Proportion Correct on Test Set")
-                    plt.title("1.D: Error Rate per Generation")
-                    plt.show()
 
                 if prob == 'b':  # check if it's 1.b
                     c()  # call part C
@@ -148,49 +171,26 @@ def prob1():
 
             w1 = w1 - - learningRate * data[index][0]  # update w2
             w2 = w2 - - learningRate * data[index][1]  # update w2
-            bias = bias - learningRate*biasUpdate  # update bias
+            bias = bias - learningRate * biasUpdate  # update bias
 
             return test(data, labels, prob)
 
         return train(x_train, y_train)
 
-    def c():  # plots the decition boundary with weights set by hand
-        w1 = -1  # alternatively the user could be prompted for these
-        w2 = -1
-        m = -w1 / w2
-        yIntcpt = 6.465
-        # y = - w1 * x + w2 * x / w3
-
-        # gathered from part a
-        x = data["petal_width"].values.T  # x data for scatter plot
-        y = data["petal_length"].values.T  # y data for scatter plot
-        color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
-        plt.scatter(x[50:], y[50:], c=color[0, 50:], s=40)
-
-        # Draws the desision boundary
-        X, Y = list(range(1, 3)), []  # what will be the line
-        for index in range(len(X)):
-            Y.append(m * X[index] + yIntcpt)  # creating the line
-        plt.plot(X, Y)
-        plt.xlabel("Petal Length")
-        plt.ylabel("Petal Width")
-        plt.title("1.C: Decision boundary " + str(w1) + ", " + str(w2) + ", " + str(yIntcpt))
-        plt.show()
-
     a()  # run part A
     return b()  # run part B, calls part C, D, and E
 
 
+# Applies mean squared error
 def prob2(w):
     guesses = []
-    results = []
 
     def mse(y, probY):
         return pd.np.mean((y - probY) ** 2)
 
-    def mseModel(wieght):
+    def mseModel(weight):
         for i in range(len(xV)):
-            N = (xV[i][0] * wieght[0] + xV[i][1] * wieght[1] + w[2])
+            N = (xV[i][0] * weight[0] + xV[i][1] * weight[1] + w[2])
             guesses.append(sigmoid(N))
             results = mse(yV[i], guesses[i])
         print("MSE =" + str(100 * pd.np.sum(results) / len(x_test)) + "%")
