@@ -20,7 +20,7 @@ def sigmoid(z):
     return 1 / (1 + pd.np.exp(-z))
 
 
-def c(w1=-1, w2=-1, yIntcpt=6.465):  # plots the decition boundary with weights set by hand
+def c(w1=-1, w2=-1, yIntcpt=6.465, prob = "1.C: Decision boundary "):  # plots the decition boundary with weights set by hand
     # alternatively the user could be prompted for these
     # y = - w1 * x + w2 * x / w3
 
@@ -36,7 +36,7 @@ def c(w1=-1, w2=-1, yIntcpt=6.465):  # plots the decition boundary with weights 
     plt.plot(X, Y)
     plt.xlabel("Petal Length")
     plt.ylabel("Petal Width")
-    plt.title("1.C: Decision boundary " + str(w1) + ", " + str(w2) + ", " + str(yIntcpt))
+    plt.title(prob + str(w1) + ", " + str(w2) + ", " + str(yIntcpt))
     plt.show()
 
 
@@ -101,19 +101,17 @@ def prob1():
                 def d():  # Part D
                     w1Val = pd.np.arange(1,2.5, 1.5/100)
                     w2Val = pd.np.arange(3,7,4/100)
-                    X, Y, Z = [], [], pd.np.zeros([100,100])
-                    for i in range(len(w1Val)):
-                        X.append(xV[i][0]) # lengths
-                        Y.append(xV[i][1]) # widths
-
-                        for j in range(len(w2Val)): # maps x and y to the z axis #TODO FIX
+                    Z = pd.np.zeros([100,100])
+                    for i in range(len(w1Val)): # plots the Z using w1val and w2vals as x&y
+                        for j in range(len(w2Val)): # maps x and y to the z axis
                             Z[i][j]= (sigmoid(w1Val[i] * w1 + w2Val[j] * w2 + bias))
 
                     # for 3d plotting
                     fig = plt.figure()
                     ax = fig.add_subplot(111, projection='3d')
-                    print(len(X),len(Y),len(Z))
-                    Axes3D.plot_wireframe(self = ax, X=pd.np.array(w1Val), Y = pd.np.array(w2Val), Z =pd.np.array(Z).T)
+                    Z = pd.np.array(Z).T
+                    Axes3D.plot_wireframe(self = ax, X=pd.np.array(w1Val), Y = pd.np.array(w2Val), Z =Z)
+
                     plt.xlabel("w1")
                     plt.ylabel("w2")
                     plt.title("1.D: Output of the sigmoid over the input space")
@@ -184,24 +182,29 @@ def prob1():
 
 # Applies mean squared error
 def prob2(w):
-    guesses = []
+    def se(y, probY): #Squared error
+        return (probY - y) ** 2
 
-    def mse(y, probY):
-        return pd.np.mean((y - probY) ** 2)
-
-    def mseModel(weight):
+    def mseModel():
+        results = []
         for i in range(len(xV)):
-            N = (xV[i][0] * weight[0] + xV[i][1] * weight[1] + w[2])
+            guesses = []
+            N = (xV[i][0] * w[0] + xV[i][1] * w[1] + w[2])
             guesses.append(sigmoid(N))
-            results = mse(yV[i], guesses[i])
-        print("MSE =" + str(100 * pd.np.sum(results) / len(x_test)) + "%")
+            results.append(se(yV[i], guesses[i]))
+        print("MSE =" + str(pd.np.mean(results)) + "%")
 
     print("\nPROB 2.A:")
-    mseModel(w)
+    mseModel()
 
     print("\nPROB 2.B:")
-    mseModel([.5, -.6, 6.45])
-    mseModel([0, 0, 0])
+    w = [.5, .6, 6.45]
+    mseModel()
+    c(w[0],w[1],w[2], prob="1.B: Decision boundary ")
+    w = [-50, -50, -.5]
+    mseModel()
+    c(w[0],w[1],w[2], prob="1.B: Decision boundary ")
+
 
 
 # Uses a tool library to make it ez
