@@ -1,7 +1,6 @@
 # P2.py started on 11/13/2018
 # Author: Cormac Dacker (cxd289)
 # Date: 6 December 2018
-
 import random
 
 import keras
@@ -9,6 +8,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
+
+learningRate = .001
+wBad = [1, 1, 1]
+wGood = [.08, .13, -6]
 
 
 # Used to self report errors
@@ -20,7 +23,42 @@ def sigmoid(z):
     return 1 / (1 + pd.np.exp(-z))
 
 
-def c(w1=-1, w2=-1, yIntcpt=6.465, prob = "1.C: Decision boundary "):  # plots the decition boundary with weights set by hand
+def sigmoidDeriv(T):
+    try:
+        return T * (1 - T)
+    except RuntimeWarning as e:
+        print(T)
+        err(e)
+
+
+def se(y, probY):  # Squared error
+    return (probY - y) ** 2
+
+
+def mseModel(w):
+    learningRate = 0.001
+    results = 0
+    newW = list(range(0, 3))
+    w1Update, w2Update, biasUpdate = 0, 0, 0
+    for i in range(len(xV)):
+        N = (xV[i][0] * w[0] + xV[i][1] * w[1] + w[2])
+        guesses = sigmoid(N)
+        actual = yV[i] - 1
+        results += se(actual, guesses)
+        w1Update += ((guesses - actual) * sigmoidDeriv(sigmoid(N))) * xV[i][0]  # update w2
+        w2Update += ((guesses - actual) * sigmoidDeriv(sigmoid(N))) * xV[i][1]  # update w2
+        biasUpdate += (guesses - actual) * sigmoidDeriv(sigmoid(N))
+    out = results / len(xV)
+    newW[0] = w[0] - learningRate * w1Update  # update w2
+    newW[1] = w[1] - learningRate * w2Update  # update w2
+    newW[2] = w[2] - learningRate * biasUpdate  # update bias
+    # print("MSE =" + str(out) + "%")
+    # print(xV)
+    return (out, newW)
+
+
+def c(w1=.5, w2=.5, bias=6.465,
+      prob="1.C: Decision boundary ", yIntcpt=6.465):  # plots the decition boundary with weights set by hand
     # alternatively the user could be prompted for these
     # y = - w1 * x + w2 * x / w3
 
@@ -30,12 +68,14 @@ def c(w1=-1, w2=-1, yIntcpt=6.465, prob = "1.C: Decision boundary "):  # plots t
     plt.scatter(x[50:], y[50:], c=color[0, 50:], s=40)
 
     # Draws the desision boundary
-    X, Y = list(range(1, 3)), []  # what will be the line
+    X, Y = list(range(3, 7)), []  # what will be the line
+    m = (-w1 / w2)
+    yIntcpt = (-bias) / w2
     for index in range(len(X)):
-        Y.append((-w1/w2) * X[index] + yIntcpt)  # creating the line
-    plt.plot(X, Y)
-    plt.xlabel("Petal Length")
-    plt.ylabel("Petal Width")
+        Y.append(m * X[index] + yIntcpt)  # creating the line
+    plt.plot(Y, X)
+    plt.ylabel("Petal Length")
+    plt.xlabel("Petal Width")
     plt.title(prob + str(w1) + ", " + str(w2) + ", " + str(yIntcpt))
     plt.show()
 
@@ -57,8 +97,6 @@ yV = list(data.iloc[50:, 4].values)  # class data
 
 # slit into testing and training
 x_train, x_test, y_train, y_test = train_test_split(xV, yV, test_size=0.20, random_state=1)
-
-learningRate = .001
 
 
 # Uses Logistic regression and returns the weights for prob 2 to use
@@ -83,13 +121,6 @@ def prob1():
         def predict(p):
             return 1 if p >= .5 else 0
 
-        def sigmoidDeriv(T):
-            try:
-                return T * (1 - T)
-            except RuntimeWarning as e:
-                print(sigmoid)
-                err(e)
-
         def ErResWeiDerive(T, t, sigmoid, data):  # derivative of the error with respect to the weight
             return (T - t) * sigmoidDeriv(sigmoid) * data  # sigmoid is the last input to the last neuron
 
@@ -99,18 +130,18 @@ def prob1():
         def train(data, labels, prob='b'):  # Trains the modle based off the given training
             def test(data=None, labels=None, prob="b"):  # Part D is inbedded to use info from part B
                 def d():  # Part D
-                    w1Val = pd.np.arange(1,2.5, 1.5/100)
-                    w2Val = pd.np.arange(3,7,4/100)
-                    Z = pd.np.zeros([100,100])
-                    for i in range(len(w1Val)): # plots the Z using w1val and w2vals as x&y
-                        for j in range(len(w2Val)): # maps x and y to the z axis
-                            Z[i][j]= (sigmoid(w1Val[i] * w1 + w2Val[j] * w2 + bias))
+                    w1Val = pd.np.arange(1, 2.5, 1.5 / 100)
+                    w2Val = pd.np.arange(3, 7, 4 / 100)
+                    Z = pd.np.zeros([100, 100])
+                    for i in range(len(w1Val)):  # plots the Z using w1val and w2vals as x&y
+                        for j in range(len(w2Val)):  # maps x and y to the z axis
+                            Z[i][j] = (sigmoid(w1Val[i] * w1 + w2Val[j] * w2 + bias))
 
                     # for 3d plotting
                     fig = plt.figure()
                     ax = fig.add_subplot(111, projection='3d')
                     Z = pd.np.array(Z).T
-                    Axes3D.plot_wireframe(self = ax, X=pd.np.array(w1Val), Y = pd.np.array(w2Val), Z =Z)
+                    Axes3D.plot_wireframe(self=ax, X=pd.np.array(w1Val), Y=pd.np.array(w2Val), Z=Z)
 
                     plt.xlabel("w1")
                     plt.ylabel("w2")
@@ -168,8 +199,8 @@ def prob1():
             #     w2Update += (T - t) * sigmoidDeriv(sigmoid(priorN))  # update w2
             #     biasUpdate += (T - t) * sigmoidDeriv(sigmoid(N))
             #
-            # w1 = w1 - - learningRate * data[index][0]  # update w2
-            # w2 = w2 - - learningRate * data[index][1]  # update w2
+            # w1 = w1 - - learningRate * w1Update  # update w2
+            # w2 = w2 - - learningRate * w2Update  # update w2
             # bias = bias - learningRate * biasUpdate  # update bias
 
             return test(data, labels, prob)
@@ -182,29 +213,48 @@ def prob1():
 
 # Applies mean squared error
 def prob2(w):
-    def se(y, probY): #Squared error
-        return (probY - y) ** 2
-
-    def mseModel():
-        results = []
-        for i in range(len(xV)):
-            guesses = []
-            N = (xV[i][0] * w[0] + xV[i][1] * w[1] + w[2])
-            guesses.append(sigmoid(N))
-            results.append(se(yV[i], guesses[i]))
-        print("MSE =" + str(pd.np.mean(results)) + "%")
-
     print("\nPROB 2.A:")
-    mseModel()
+    mseModel(w)
 
     print("\nPROB 2.B:")
-    w = [.5, .6, 6.45]
-    mseModel()
-    c(w[0],w[1],w[2], prob="1.B: Decision boundary ")
-    w = [-50, -50, -.5]
-    mseModel()
-    c(w[0],w[1],w[2], prob="1.B: Decision boundary ")
+    w = wGood
+    mseModel(w)
+    c(w[0], w[1], w[2], prob="2.B: Decision boundary ")
+    w = wBad
+    mseModel(w)
+    c(w[0], w[1], w[2], prob="2.B: Decision boundary ")
 
+    print("\nPROB 2.E:")
+    w = wBad
+    c(w[0], w[1], w[2], prob="2.E: Decision boundary ")
+    mse = mseModel(w)
+    w = mse[1]
+    c(w[0], w[1], w[2], prob="2.E: Decision boundary ")
+
+
+# I hate this assignment
+def prob3():
+    print("PROB 3.B")
+    rng = 10001
+    wDifference = list(range(0, rng))
+    w = [random.random(), random.random(), -random.random()]
+    for i in range(0, rng):
+
+        mse = mseModel(w)
+        wDifference[i] = (mse[0])
+
+        w = mse[1]
+
+        temp = list(range(0, i))
+        for j in range(len(temp)):  # does not help with run time
+            temp[j] = wDifference[j]
+
+        if i == 10 or i == int(rng / 2) or i == rng - 10:
+            print(mse)
+            plt.plot(list(range(0, len(temp))), temp)
+            plt.title("PROB 2.B Learning curve")
+            plt.show()
+            c(w[0], w[1], w[2], prob="PROB 2.B")
 
 
 # Uses a tool library to make it ez
@@ -240,5 +290,6 @@ def prob4():
 
 
 if __name__ == "__main__":
-    prob2(prob1())  # run problem 1
-    # prob4()
+    #  prob2(prob1())  # run problem 1 #TODO fix output plots
+    prob3()
+#  prob4()
