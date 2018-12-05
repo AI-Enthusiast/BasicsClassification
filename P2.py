@@ -99,23 +99,24 @@ def prob1():
         def train(data, labels, prob='b'):  # Trains the modle based off the given training
             def test(data=None, labels=None, prob="b"):  # Part D is inbedded to use info from part B
                 def d():  # Part D
-                    X, Y, Z = [], [], list(list(range(0,10000)))
-                    for i in range(len(xV)):
+                    w1Val = pd.np.arange(1,2.5, 1.5/100)
+                    w2Val = pd.np.arange(3,7,4/100)
+                    X, Y, Z = [], [], pd.np.zeros([100,100])
+                    for i in range(len(w1Val)):
                         X.append(xV[i][0]) # lengths
                         Y.append(xV[i][1]) # widths
 
-                        for j in range(len(yV)): # maps x and y to the z axis
-                             Z.append(sigmoid(Y[i] * w1 + X[j] * w2 + bias))
+                        for j in range(len(w2Val)): # maps x and y to the z axis #TODO FIX
+                            Z[i][j]= (sigmoid(w1Val[i] * w1 + w2Val[j] * w2 + bias))
 
                     # for 3d plotting
                     fig = plt.figure()
                     ax = fig.add_subplot(111, projection='3d')
                     print(len(X),len(Y),len(Z))
-                    Axes3D.plot_wireframe(self = ax, X=pd.np.array(X), Y = pd.np.array(Y), Z =pd.np.array(Z[0]))
-                    #plt.plot(list(range(len(x_test))), errRate)
-                    plt.xlabel("Iteration")
-                    plt.ylabel("Proportion Correct on Test Set")
-                    plt.title("1.D: Error Rate per Generation")
+                    Axes3D.plot_wireframe(self = ax, X=pd.np.array(w1Val), Y = pd.np.array(w2Val), Z =pd.np.array(Z).T)
+                    plt.xlabel("w1")
+                    plt.ylabel("w2")
+                    plt.title("1.D: Output of the sigmoid over the input space")
                     plt.show()
 
                 errRate = []
@@ -151,7 +152,7 @@ def prob1():
                 # print("Prob of Error  =", str(100 * numWrong / len(x_test)) + "%")
 
             # initializing variables for loop
-            w1, w2, bias = random.random(), random.random(), -random.random()  # initialize weights and biases
+            w1, w2, bias = .5, .5, -3.5  # initialize weights and biases
             w1Update, w2Update, biasUpdate = 0, 0, 0
             totErr = []  # the total error
             N, priorN = 0, 0
@@ -165,13 +166,13 @@ def prob1():
                 t = (labels[index] - 1)  # minus one bc 2nd and 3rd classes = 1 & 2
                 totErr.append(error(T, t))
                 # print("(x,y)=", (x_train[index], t))
-                w1Update += (T - t) * sigmoidDeriv(sigmoid(priorN))  # update w2
-                w2Update += (T - t) * sigmoidDeriv(sigmoid(priorN))  # update w2
-                biasUpdate += (T - t) * sigmoidDeriv(sigmoid(N))
-
-            w1 = w1 - - learningRate * data[index][0]  # update w2
-            w2 = w2 - - learningRate * data[index][1]  # update w2
-            bias = bias - learningRate * biasUpdate  # update bias
+            #     w1Update += (T - t) * sigmoidDeriv(sigmoid(priorN))  # update w2
+            #     w2Update += (T - t) * sigmoidDeriv(sigmoid(priorN))  # update w2
+            #     biasUpdate += (T - t) * sigmoidDeriv(sigmoid(N))
+            #
+            # w1 = w1 - - learningRate * data[index][0]  # update w2
+            # w2 = w2 - - learningRate * data[index][1]  # update w2
+            # bias = bias - learningRate * biasUpdate  # update bias
 
             return test(data, labels, prob)
 
