@@ -11,74 +11,7 @@ from sklearn.model_selection import train_test_split
 
 learningRate = .001
 wBad = [1, 1, 1]
-wGood = [.08, .13, -6]
-
-
-# Used to self report errors
-def err(errorMessage):
-    print("> ERROR:\t" + errorMessage)
-
-
-def sigmoid(z):
-    return 1 / (1 + pd.np.exp(-z))
-
-
-def sigmoidDeriv(T):
-    try:
-        return T * (1 - T)
-    except RuntimeWarning as e:
-        print(T)
-        err(e)
-
-
-def se(y, probY):  # Squared error
-    return (probY - y) ** 2
-
-
-def mseModel(w):
-    learningRate = 0.001
-    results = 0
-    newW = list(range(0, 3))
-    w1Update, w2Update, biasUpdate = 0, 0, 0
-    for i in range(len(xV)):
-        N = (xV[i][0] * w[0] + xV[i][1] * w[1] + w[2])
-        guesses = sigmoid(N)
-        actual = yV[i] - 1
-        results += se(actual, guesses)
-        w1Update += ((guesses - actual) * sigmoidDeriv(sigmoid(N))) * xV[i][0]  # update w2
-        w2Update += ((guesses - actual) * sigmoidDeriv(sigmoid(N))) * xV[i][1]  # update w2
-        biasUpdate += (guesses - actual) * sigmoidDeriv(sigmoid(N))
-    out = results / len(xV)
-    newW[0] = w[0] - learningRate * w1Update  # update w2
-    newW[1] = w[1] - learningRate * w2Update  # update w2
-    newW[2] = w[2] - learningRate * biasUpdate  # update bias
-    # print("MSE =" + str(out) + "%")
-    # print(xV)
-    return (out, newW)
-
-
-def c(w1=.5, w2=.5, bias=6.465,
-      prob="1.C: Decision boundary ", yIntcpt=6.465):  # plots the decition boundary with weights set by hand
-    # alternatively the user could be prompted for these
-    # y = - w1 * x + w2 * x / w3
-
-    # gathered from part a
-
-    color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
-    plt.scatter(x[50:], y[50:], c=color[0, 50:], s=40)
-
-    # Draws the desision boundary
-    X, Y = list(range(3, 7)), []  # what will be the line
-    m = (-w1 / w2)
-    yIntcpt = (-bias) / w2
-    for index in range(len(X)):
-        Y.append(m * X[index] + yIntcpt)  # creating the line
-    plt.plot(Y, X)
-    plt.ylabel("Petal Length")
-    plt.xlabel("Petal Width")
-    plt.title(prob + str(w1) + ", " + str(w2) + ", " + str(yIntcpt))
-    plt.show()
-
+wGood = [.2, 3.7, -7]
 
 # Problem 1 of the homework #TODO CLean up before submitting
 data = pd.read_csv("irisdata.csv")
@@ -99,40 +32,98 @@ yV = list(data.iloc[50:, 4].values)  # class data
 x_train, x_test, y_train, y_test = train_test_split(xV, yV, test_size=0.20, random_state=1)
 
 
+# Used to self report errors
+def err(errorMessage):
+    print("> ERROR:\t" + errorMessage)
+
+
+def sigmoid(z):
+    return 1 / (1 + pd.np.exp(-z))
+
+
+# Computes the derivative of a sigmoid
+def sigmoidDeriv(T):
+    try:
+        return T * (1 - T)
+    except RuntimeWarning as e:
+        print(T)
+        err(e)
+
+
+# Creates a mse model, taking a parameter of weights and retruning the mse for the model and the updated weights
+# Only take NN parameters because Iris data is global
+def mseModel(w):
+    # initialize loop vars
+    results = 0  # for the squared error, the nominator of MSE
+    w1Update, w2Update, biasUpdate = 0, 0, 0  #
+
+    # Loops though all the Width and length data collecting the Squared error data then the mean of it after the loop
+    for i in range(len(xV)):
+        N = (xV[i][0] * w[0] + xV[i][1] * w[1] + w[2])  # squish
+        guesses = sigmoid(N)  # gives the sigmoid of the squish
+        actual = yV[i] - 1  # the actual lable of the class
+        results += (guesses - actual) ** 2  # adds the squared error to the results
+        w1Update += ((guesses - actual) * sigmoidDeriv(sigmoid(N))) * xV[i][0]  # update w2
+        w2Update += ((guesses - actual) * sigmoidDeriv(sigmoid(N))) * xV[i][1]  # update w2
+        biasUpdate += (guesses - actual) * sigmoidDeriv(sigmoid(N))  # update bias
+    out = results / len(xV)
+
+    newW = list(range(0, 3))  # a list for the new weights
+    newW[0] = w[0] - learningRate * w1Update  # update w2
+    newW[1] = w[1] - learningRate * w2Update  # update w2
+    newW[2] = w[2] - learningRate * biasUpdate  # update bias
+    return (out, newW)
+
+
+# PROB 1.C
+# plots the decition boundary with weights set by hand
+def c(w1=.5, w2=.5, bias=-3, prob="1.C:"):
+    color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
+    plt.scatter(x[50:], y[50:], c=color[0, 50:], s=40)  # crate a scatter plot of only the 2nd & 3rd classes
+
+    X, Y = list(range(3, 7)), []  # what will be the line
+    m = (-w1 / w2)  # finds the slope
+    yIntcpt = (-bias) / w2  # converts to the y intercept
+
+    # loop for drawing the line
+    for index in range(len(X)):
+        Y.append(m * X[index] + yIntcpt)  # creating the line
+
+    # Draws the desision boundary
+    plt.plot(Y, X)
+    plt.ylabel("Petal Length")
+    plt.xlabel("Petal Width")
+    plt.title(prob + " Decision boundary ")
+    plt.show()
+
+
 # Uses Logistic regression and returns the weights for prob 2 to use
 def prob1():
     def a():  # Scatter plot of petal width and length of classes 2&3
         color = (data[["species"]].values.T).astype("uint8")  # how to color the point on the scatter plot
-        plt.scatter(x[50:], y[50:], c=color[0, 50:],
-                    s=40)  # create a scatter plot of only the 2&3classes (row 50 and down)
-
+        plt.scatter(x[50:], y[50:], c=color[0, 50:], s=40)  # crate a scatter plot of only the 2nd & 3rd classes
         plt.xlabel("Petal Length")
         plt.ylabel("Petal Width")
         plt.title("1.A: Iris Data | 2nd & 3rd Classes")
         plt.show()  # ggez
 
     def b():  # Part B, contains Part D and E
-        def e():  # Part E, calls Prob 2
+        # Part E
+        def e():
             rows = [53, 57, 56, 70, 77, 136, 119, 106, 128, 136]
             x = list(data.iloc[rows, [2, 3]].values)  # Length and Width data
             y = list(data.iloc[rows, 4].values)  # class data
-            return train(x, y, "e")
+            return model(x, y, "e")
 
-        def predict(p):
-            return 1 if p >= .5 else 0
-
-        def ErResWeiDerive(T, t, sigmoid, data):  # derivative of the error with respect to the weight
-            return (T - t) * sigmoidDeriv(sigmoid) * data  # sigmoid is the last input to the last neuron
-
-        def error(T, t):  # prob 3
-            return ((T - t))
-
-        def train(data, labels, prob='b'):  # Trains the modle based off the given training
+        def model(data=None, labels=None,prob='b'):  # Trains the modle based off the given training
             def test(data=None, labels=None, prob="b"):  # Part D is inbedded to use info from part B
-                def d():  # Part D
-                    w1Val = pd.np.arange(1, 2.5, 1.5 / 100)
-                    w2Val = pd.np.arange(3, 7, 4 / 100)
+                # Part D
+                def d():  # create a 3D plot
+                    #
+                    w1Val = pd.np.arange(1, 2.5,1.5/100) # create data points in the range of the data
+                    w2Val = pd.np.arange(3, 7, 4/100)
                     Z = pd.np.zeros([100, 100])
+
                     for i in range(len(w1Val)):  # plots the Z using w1val and w2vals as x&y
                         for j in range(len(w2Val)):  # maps x and y to the z axis
                             Z[i][j] = (sigmoid(w1Val[i] * w1 + w2Val[j] * w2 + bias))
@@ -140,16 +131,12 @@ def prob1():
                     # for 3d plotting
                     fig = plt.figure()
                     ax = fig.add_subplot(111, projection='3d')
-                    Z = pd.np.array(Z).T
+                    Z = pd.np.array(Z).T  # transpose the Z
                     Axes3D.plot_wireframe(self=ax, X=pd.np.array(w1Val), Y=pd.np.array(w2Val), Z=Z)
-
                     plt.xlabel("w1")
                     plt.ylabel("w2")
                     plt.title("1.D: Output of the sigmoid over the input space")
                     plt.show()
-
-                errRate = []
-                numWrong = 0
 
                 if prob == 'b':  # check if it's 1.b
                     data = x_test
@@ -158,11 +145,15 @@ def prob1():
                 else:
                     print("PROB 1.E:")
 
+                # initialize vars before loop
+                errRate = []
+                numWrong = 0
+
                 # tests the data
                 for index in range(len(data)):
-
                     actual = labels[index] - 1  # true class
-                    predicted = predict(sigmoid(data[index][0] * w1 + data[index][1] * w2 + bias))  # predicted class
+                    # prediction of what class it should be
+                    predicted = 1 if (sigmoid(data[index][0] * w1 + data[index][1] * w2 + bias)) >= .5 else 0
                     out = "√"
                     if predicted != actual:
                         numWrong += 1
@@ -175,121 +166,109 @@ def prob1():
                     c()  # call part C
                     d()  # call part D
                     e()  # call part E
-                    return (w1, w2, bias)
-
-                # print(" y = " + str(-w1) + "/" + str(w2) + " * x" + " - " + str(bias))
-                # print("Prob of Error  =", str(100 * numWrong / len(x_test)) + "%")
 
             # initializing variables for loop
-            w1, w2, bias = .5, .5, -3.5  # initialize weights and biases
-            w1Update, w2Update, biasUpdate = 0, 0, 0
-            totErr = []  # the total error
-            N, priorN = 0, 0
-            for index in range(len(data)):
-                # print(x_train[index][0] , w1 , x_train[index][1] , w2 , bias)
-                priorN = N
-                N = data[index][0] * w1 + data[index][1] * w2 + bias  # N = length * w1 + width * w2 + bias
-                # print("N",N) #temp
-                # print("W1, w2= " , w1, w2)
-                T = sigmoid(N)  # 1-0 on what class it thinks it is
-                t = (labels[index] - 1)  # minus one bc 2nd and 3rd classes = 1 & 2
-                totErr.append(error(T, t))
-                # print("(x,y)=", (x_train[index], t))
-            #     w1Update += (T - t) * sigmoidDeriv(sigmoid(priorN))  # update w2
-            #     w2Update += (T - t) * sigmoidDeriv(sigmoid(priorN))  # update w2
-            #     biasUpdate += (T - t) * sigmoidDeriv(sigmoid(N))
-            #
-            # w1 = w1 - - learningRate * w1Update  # update w2
-            # w2 = w2 - - learningRate * w2Update  # update w2
-            # bias = bias - learningRate * biasUpdate  # update bias
+            w1, w2, bias = .5, .5, -3  # initialize weights and biases
+            # totErr = []  # the total error
+            # for index in range(len(data)):
+            #     N = data[index][0] * w1 + data[index][1] * w2 + bias  # N = length * w1 + width * w2 + bias
+            #     T = sigmoid(N)  # 1-0 on what class it thinks it is
+            #     t = (labels[index] - 1)  # minus one bc 2nd and 3rd classes = 1 & 2
+            #     totErr.append(T - t)
+            test(data, labels, prob =prob)
 
-            return test(data, labels, prob)
-
-        return train(x_train, y_train)
+        model(prob = "b")
 
     a()  # run part A
-    return b()  # run part B, calls part C, D, and E
+    b()  # run part B
 
 
 # Applies mean squared error
-def prob2(w):
-    print("\nPROB 2.A:")
-    mseModel(w)
-
-    print("\nPROB 2.B:")
+def prob2():
+    print("\nPROB 2.B:")#Shows good and bad MSEs and plots them
     w = wGood
-    mseModel(w)
-    c(w[0], w[1], w[2], prob="2.B: Decision boundary ")
+    print("Good: {:.2f}".format(mseModel(w)[0]))
+    c(w[0], w[1], w[2], prob="2.B: Good")
     w = wBad
-    mseModel(w)
-    c(w[0], w[1], w[2], prob="2.B: Decision boundary ")
+    print("Bad: {:.2f}".format(mseModel(w)[0]))
+    c(w[0], w[1], w[2], prob="2.B: Bad")
 
-    print("\nPROB 2.E:")
-    w = wBad
-    c(w[0], w[1], w[2], prob="2.E: Decision boundary ")
-    mse = mseModel(w)
-    w = mse[1]
-    c(w[0], w[1], w[2], prob="2.E: Decision boundary ")
-
-
-# I hate this assignment
-def prob3():
-    print("PROB 3.B")
-    rng = 10001
-    wDifference = list(range(0, rng))
-    w = [random.random(), random.random(), -random.random()]
-    for i in range(0, rng):
-
+    print("\nPROB 2.E:") # shows and update with an mse
+    w = [.5,.5,-3]
+    print("Before: {:.2f}".format(mseModel(w)[0]))
+    c(w[0], w[1], w[2], prob="2.E: Before")
+    for i in range(0,500):
         mse = mseModel(w)
-        wDifference[i] = (mse[0])
+    w = mse[1]
+    print("After: {:.3f}".format(mseModel(w)[0]))
+    c(w[0], w[1], w[2], prob="2.E: After")
 
-        w = mse[1]
 
-        temp = list(range(0, i))
-        for j in range(len(temp)):  # does not help with run time
-            temp[j] = wDifference[j]
+# implemets gradient decent using MSE
+def prob3():
+    # PROB 3.A Code
+    rng = 10001
+    wDifference = list(range(0, rng))  # a placeholder for mse values for plotting
+    w = [random.random(), random.random(), -random.random()]  # initialize random weights
+    # Loop computes the gradeint decent by updating the weights through the mseModel()
+    for i in range(0, rng):
+        mse = mseModel(w)  # run the current model
+        wDifference[i] = (mse[0])  # adds the mse to the index
+        w = mse[1]  # takes the updated weights
 
-        if i == 10 or i == int(rng / 2) or i == rng - 10:
-            print(mse)
-            plt.plot(list(range(0, len(temp))), temp)
-            plt.title("PROB 2.B Learning curve")
+        # The if statment below is the code for 3.B
+        # plot the DB at 10 iterations into gradient decent, in the middle and 10 before the end.
+        if i == 10 or i == int(rng / 2) or i == rng - 10:  # PROB 3.B & C
+            mseLst = list(range(0, i))  # this coppies everything from wDifference to the current index
+            # This needs to happen because wDifference has a size set to 1000, so plotting without it full is wrong
+            for j in range(len(mseLst)):  # does not help with run time  ¯\_(ツ)_/¯ only have to do it 3 times
+                mseLst[j] = wDifference[j]
+
+            c(w[0], w[1], w[2], prob="PROB 3.C:")  # plot the decition boundary using 1.c 's code
+            plt.plot(list(range(0, len(mseLst))), mseLst)  # Plot the mse curve (should decrease)
+            plt.title("PROB 3.C: Learning curve")
             plt.show()
-            c(w[0], w[1], w[2], prob="PROB 2.B")
+    print(w)
 
 
 # Uses a tool library to make it ez
 def prob4():
-    def modelNN(dim):  # the model being used
-        model = keras.Sequential()
-        model.add(keras.layers.Dense(1, input_dim=dim, activation='sigmoid'))
-        model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
-        return model
-
+    rng = 10 # eazy control over number of epochs
     def a():  # Part A, following the tutorial
         print("\nPROB 4.A:")
-        model = modelNN(2)
-        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=1000,
-                  validation_data=(pd.np.array(x_test), pd.np.array((y_test))))
+        model = keras.Sequential()
+        model.add(keras.layers.Dense(1, input_dim=2, activation='sigmoid'))
+        model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
+        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=rng,
+                  validation_data=(pd.np.array(x_test), pd.np.array(y_test)))
+        model.summary()
+
 
     def b():  # Part B, the complete iris data
         print("\nPROB 4.B:")
 
         # split into relevent data sections
-        xS = list(data.iloc[0:, [0, 1, 2, 3]].values)  # Length and Width data
-        yS = list(data.iloc[0:, 4].values)  # class data
+        xS = list(data.iloc[1:, [0, 1, 2, 3]].values)  # Length and Width data
+        yS = list(data.iloc[1:, 4].values)  # class data
 
         # slit into testing and training
         x_train, x_test, y_train, y_test = train_test_split(xS, yS, test_size=0.20, random_state=1)
 
-        model = modelNN(4)
-        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=1000,
+        model = keras.Sequential()
+        model.add(keras.layers.Dense(16, input_shape=(4,), activation='sigmoid'))
+        model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
+        model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=rng,
                   validation_data=(pd.np.array(x_test), pd.np.array((y_test))))
+        loss, accuracy = model.evaluate(x_test, y_test, verbose=1)
+        print("Accuracy = {:.2f}".format(accuracy))
+        model.summary()
 
     a()  # run part A
     b()  # run part B
 
 
 if __name__ == "__main__":
-    #  prob2(prob1())  # run problem 1 #TODO fix output plots
-    prob3()
-#  prob4()
+    #prob1()  # run problem 1
+    prob2()  # run problem 2
+    #prob3()  # run problem 3
+    prob4()  # run problem 4
