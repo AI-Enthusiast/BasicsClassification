@@ -244,6 +244,9 @@ def prob4():
         model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
         model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=rng,
                   validation_data=(pd.np.array(x_test), pd.np.array(y_test)))
+        results = model.evaluate(pd.np.array(x_test), pd.np.array(y_test))
+        print("Accuracy = {:.2f}".format(results[1]))
+        print("Loss = {:.2f}".format(results[0]))
         model.summary()
 
 
@@ -251,25 +254,24 @@ def prob4():
         print("\nPROB 4.B:")
 
         # split into relevent data sections
-        xS = list(data.iloc[:, 0:4].values.astype(float))  # Length and Width data
-        yS = list(data.iloc[:, 4].values.astype(float))  # class data
+        xS = list(data.iloc[:, :4].values)  # Length and Width data
+        yS = list(data.iloc[:, 4].values)  # class data
 
-        encoder = LabelEncoder()
-        encoder.fit(xS)
-        eY = encoder.transform(yS)
-        test = keras.utils.np_utils.to_categorical(eY)
         # slit into testing and training
         x_train, x_test, y_train, y_test = train_test_split(xS, yS, test_size=0.20, random_state=1)
 
+        # almost identical to part a
         model = keras.Sequential()
-        model.add(keras.layers.Dense(8, input_dim=4, activation='relu'))
-        model.add(keras.layers.Dense(3, activation='sigmoid'))
+        model.add(keras.layers.Dense(4, input_dim=4, activation='relu'))
+        model.add(keras.layers.Dense(1, activation='sigmoid'))
         #model.add(keras.layers.Dense(4, input_shape=(4,), activation='sigmoid'))
-        model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
         model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=rng,
                   validation_data=(pd.np.array(x_test), pd.np.array(y_test)))
-        loss, accuracy = model.evaluate(x_test, y_test, verbose=1)
-        print("Accuracy = {:.2f}".format(accuracy))
+        results = model.evaluate(pd.np.array(x_test), pd.np.array(y_test))
+        print("Accuracy = {:.2f}".format(results[1]))
+        print("Loss = {:.2f}".format(results[0]))
+
         model.summary()
 
     a()  # run part A
