@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 learningRate = .001
 wBad = [1, 1, 1]
@@ -119,22 +120,23 @@ def prob1():
             def test(data=None, labels=None, prob="b"):  # Part D is inbedded to use info from part B
                 # Part D
                 def d():  # create a 3D plot
-                    #
-                    w1Val = pd.np.arange(1, 2.5,1.5/100) # create data points in the range of the data
-                    w2Val = pd.np.arange(3, 7, 4/100)
+                    w2Val = pd.np.arange(1, 2.5,1.5/100) # create data points in the range of the data
+                    w1Val = pd.np.arange(3, 7, 4/100)
                     Z = pd.np.zeros([100, 100])
 
                     for i in range(len(w1Val)):  # plots the Z using w1val and w2vals as x&y
                         for j in range(len(w2Val)):  # maps x and y to the z axis
-                            Z[i][j] = (sigmoid(w1Val[i] * w1 + w2Val[j] * w2 + bias))
+                            Z[j][i] = (sigmoid(w1Val[i] * w1+ w2Val[j] * w2 + bias)) # must be at [j][i] for some reason
 
                     # for 3d plotting
                     fig = plt.figure()
                     ax = fig.add_subplot(111, projection='3d')
                     Z = pd.np.array(Z).T  # transpose the Z
+                    #print(Z) TESTING
                     Axes3D.plot_wireframe(self=ax, X=pd.np.array(w1Val), Y=pd.np.array(w2Val), Z=Z)
                     plt.xlabel("w1")
                     plt.ylabel("w2")
+                    #plt.zlable("output") lame
                     plt.title("1.D: Output of the sigmoid over the input space")
                     plt.show()
 
@@ -163,12 +165,12 @@ def prob1():
                 print("Score = ", str(100 * (len(data) - numWrong) / len(data)) + "%\n  ")
 
                 if prob == 'b':  # check if it's 1.b
-                    c()  # call part C
+                    #c()  # call part C
                     d()  # call part D
-                    e()  # call part E
+                    #e()  # call part E
 
             # initializing variables for loop
-            w1, w2, bias = .5, .5, -3  # initialize weights and biases
+            w1, w2, bias = wGood[0],wGood[1],wGood[2]  # initialize weights and biases
             # totErr = []  # the total error
             # for index in range(len(data)):
             #     N = data[index][0] * w1 + data[index][1] * w2 + bias  # N = length * w1 + width * w2 + bias
@@ -179,7 +181,7 @@ def prob1():
 
         model(prob = "b")
 
-    a()  # run part A
+    #a()  # run part A
     b()  # run part B
 
 
@@ -205,11 +207,12 @@ def prob2():
 
 
 # implemets gradient decent using MSE
+# PROB 3.A Code
 def prob3():
-    # PROB 3.A Code
-    rng = 10001
+    rng = 10001 # Stop after this many weight adjustments/iterations
     wDifference = list(range(0, rng))  # a placeholder for mse values for plotting
     w = [random.random(), random.random(), -random.random()]  # initialize random weights
+
     # Loop computes the gradeint decent by updating the weights through the mseModel()
     for i in range(0, rng):
         mse = mseModel(w)  # run the current model
@@ -248,17 +251,23 @@ def prob4():
         print("\nPROB 4.B:")
 
         # split into relevent data sections
-        xS = list(data.iloc[1:, [0, 1, 2, 3]].values)  # Length and Width data
-        yS = list(data.iloc[1:, 4].values)  # class data
+        xS = list(data.iloc[:, 0:4].values.astype(float))  # Length and Width data
+        yS = list(data.iloc[:, 4].values.astype(float))  # class data
 
+        encoder = LabelEncoder()
+        encoder.fit(xS)
+        eY = encoder.transform(yS)
+        test = keras.utils.np_utils.to_categorical(eY)
         # slit into testing and training
         x_train, x_test, y_train, y_test = train_test_split(xS, yS, test_size=0.20, random_state=1)
 
         model = keras.Sequential()
-        model.add(keras.layers.Dense(16, input_shape=(4,), activation='sigmoid'))
-        model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy'])
+        model.add(keras.layers.Dense(8, input_dim=4, activation='relu'))
+        model.add(keras.layers.Dense(3, activation='sigmoid'))
+        #model.add(keras.layers.Dense(4, input_shape=(4,), activation='sigmoid'))
+        model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
         model.fit(x=pd.np.array(x_train), y=pd.np.array(y_train), epochs=rng,
-                  validation_data=(pd.np.array(x_test), pd.np.array((y_test))))
+                  validation_data=(pd.np.array(x_test), pd.np.array(y_test)))
         loss, accuracy = model.evaluate(x_test, y_test, verbose=1)
         print("Accuracy = {:.2f}".format(accuracy))
         model.summary()
@@ -268,7 +277,7 @@ def prob4():
 
 
 if __name__ == "__main__":
-    #prob1()  # run problem 1
-    prob2()  # run problem 2
+    prob1()  # run problem 1
+    #prob2()  # run problem 2
     #prob3()  # run problem 3
     prob4()  # run problem 4
